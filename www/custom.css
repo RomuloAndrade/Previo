@@ -1,0 +1,70 @@
+#footer-logo li {
+    display: inline;
+    margin-right: 1rem;
+}
+
+.card, .small-box, .info-box {
+    border-radius: 1rem !important;
+}
+.card-header {
+    border-radius: 1rem 1rem 0 0 !important;
+}
+.small-box-footer {
+    border-radius: 0 0 1rem 1rem !important;
+}
+.small-box > .inner {
+    font-size: 2.125rem;
+    font-weight: 900;
+}
+.small-box > .inner > p{
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+}
+.info-box .info-box-icon {
+    border-radius: 0.8rem;
+}
+.info-box-number {
+    font-size: 1.5rem;
+}
+.description-percentage {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+.description-header {
+    font-size: 1.125rem;
+}
+.description-text {
+    font-size: 1.125rem;
+    font-family:  'Roboto', sans-serif !important; 
+}
+.card-pane-right {
+    border-radius: 1rem !important;
+}
+
+/* p { */
+/*     font-family: 'Roboto', sans-serif !important; */
+/* } */
+
+.card-body > p {
+    font-family: 'Roboto', sans-serif;
+}
+.tab-pane > p {
+    font-family: 'Roboto', sans-serif;
+}
+.list-group > p {
+    font-family: 'Roboto', sans-serif;
+}
+
+
+#shiny-tab-metodologia {
+    font-size: 1.125rem;
+}
+#shiny-tab-metodologia p {
+    font-family: 'Roboto', sans-serif !important;
+}
+
+.filtro, .grafico {
+    background-color: #ffffff !important;
+    border-radius: 1rem;
+    border: 1px solid #212121;    
+}

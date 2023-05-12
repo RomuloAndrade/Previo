@@ -1,0 +1,1 @@
+https://geoserver.iplanfor.fortaleza.ce.gov.br/MOBILIDADE_URBANA/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=MOBILIDADE_URBANA:vw_PracasVivas&outputFormat=SHAPE-ZIP
