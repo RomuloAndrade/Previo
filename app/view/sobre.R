@@ -85,8 +85,8 @@ ui <- function(id) {
     h1("Código-Fonte"),
     p(
       a(
-        href="https://gitlab.com/DIOBS/paineis/taxa-natalidade-bairros",
-        "https://gitlab.com/DIOBS/paineis/taxa-natalidade-bairros"
+        href="https://github.com/RomuloAndrade/Previo",
+        "https://github.com/RomuloAndrade/Previo"
       )
     )
   )
