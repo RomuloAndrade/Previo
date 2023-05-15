@@ -737,8 +737,12 @@ server <- function(id) {
                     title = "Escolas municipais",
                     opacity = 1)
         
-        descrit_pop <- left_join(descrit_pop,desc_escola,by=c('bairro'='bairro') )
-        
+
+        descrit_pop <- left_join(descrit_pop,
+                                 if(is.null(input[["Escolas_munic-filters-tipo"]]))
+                                 {desc_escola[,c('bairro','Escolas')] } else 
+                                 {select(desc_escola[,-8],bairro,!!input[["Escolas_munic-filters-tipo"]]) }  ,
+                                 by=c('bairro'='bairro') )
       }
       
       if("Assentamento" %in% input$socioeconomica  )
@@ -1142,7 +1146,7 @@ server <- function(id) {
                     labels =c('Ecopontos'),
                     opacity = 1)
         
-        descrit_pop <- left_join(descrit_pop,desc_eco , by=c('bairro','bairro'))
+        descrit_pop <- left_join(descrit_pop,desc_eco , by=c('bairro'='bairro'))
         
         
       }
