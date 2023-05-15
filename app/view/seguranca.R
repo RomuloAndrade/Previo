@@ -32,8 +32,8 @@ box::use(
                       'Mucuripe','Vicente Pizón')
   
   
-  desc_camera <- read_csv('app/data/Sesec/202304_PosteamentoCamerasPMPUSESECNOVO/desc_camera.csv',show_col_types = FALSE)
-  desc_torre <- read_csv('app/data/Sesec/202304_BasesPMPU2022SESECNOVO/desc_torre.csv',show_col_types = FALSE)
+  desc_camera <- read_csv('app/data/Sesec/202304_PosteamentoCamerasPMPUSESECNOVO/desc_camera.csv',show_col_types = FALSE) |> select(-Cameras)
+  desc_torre <- read_csv('app/data/Sesec/202304_BasesPMPU2022SESECNOVO/desc_torre.csv',show_col_types = FALSE) 
   desc_mediacao <- read_csv('app/data/Sesec/202304_NucleosMediacaoConflitosSESECNOVO/desc_mediacao.csv',show_col_types = FALSE)
   desc_pmpu <- read_csv('app/data/Sesec/202304_TerritoriosPMPU2022SESECNOVO/desc_pmpu.csv',show_col_types = FALSE)
   
@@ -291,7 +291,7 @@ server <- function(id) {
     ## cameras poli
     output$cameras_pol <-  renderEcharts4r({
 
-      df <- desc_camera[,c(-1,-11)] |>
+      df <- desc_camera[,c(-1)] |>
         filter(Polig_atuac !='Não') |>
         replace_with_na_all(condition = ~.x == 0)
 
@@ -325,7 +325,7 @@ server <- function(id) {
     ## cameras
     output$cameras<-  renderEcharts4r({
 
-      df <- desc_camera[,-11] |>
+      df <- desc_camera |>
         filter(Polig_atuac !='Não')|>
         replace_with_na_all(condition = ~.x == 0)
 

@@ -38,7 +38,7 @@ box::use(
   desc_cons_tut <-read_csv('app/data/vw_ConselhosTutelares/desc_cons_tut.csv',show_col_types = FALSE)
   desc_social <-read_csv('app/data/vw_EquipamentosAssistenciaSocial/desc_social.csv',show_col_types = FALSE)
   desc_cult <-   read_csv('app/data/tblCultura/desc_cultura.csv',show_col_types = FALSE)
-  desc_escola <- read_csv('app/data/Escolas/desc_escola.csv',show_col_types = FALSE)
+  desc_escola <- read_csv('app/data/Escolas/desc_escola.csv',show_col_types = FALSE) |> select(-Escolas)
   desc_saude <-   read_csv('app/data/202303_EstabelecimentosSaudeCNES/desc_saude.csv',show_col_types = FALSE)
   desc_samu <- read_csv('app/data/vw_BasesSAMU/desc_samu.csv',show_col_types = FALSE)
 
@@ -443,7 +443,7 @@ server <- function(id) {
     ## social box
     output$cons_tutBox <- renderInfoBox({
       infoBox(
-        "Equipamentos de cultura em Fortaleza",sum(colSums(Filter(is.numeric,data.frame(desc_social[,-1],desc_cons_tut[,c(-1,-2)])))),
+        "Equipamentos de Assistência Social em Fortaleza",sum(colSums(Filter(is.numeric,data.frame(desc_social[,-1],desc_cons_tut[,c(-1,-2)])))),
         icon = icon("object-align-bottom", lib = "glyphicon"),
         color = 'lightblue', fill = TRUE
       )
@@ -579,7 +579,7 @@ server <- function(id) {
     ## cult box
     output$cultBox <- renderInfoBox({
       infoBox(
-        "Escolas municipais em Fortaleza",sum(colSums(Filter(is.numeric,desc_cult))),
+        "Equipamentos de Cultura em Fortaleza",sum(colSums(Filter(is.numeric,desc_cult))),
         icon = icon("object-align-bottom", lib = "glyphicon"),
         color = 'lightblue', fill = TRUE
       )
