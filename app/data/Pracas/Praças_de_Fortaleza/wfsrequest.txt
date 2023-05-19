@@ -1,1 +1,0 @@
-https://geoserver.iplanfor.fortaleza.ce.gov.br/PRACAS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=PRACAS:vw_PracasFortaleza&outputFormat=SHAPE-ZIP

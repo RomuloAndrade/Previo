@@ -1,1 +1,0 @@
-https://geoserver.iplanfor.fortaleza.ce.gov.br/PIRF_ZEIS_MOURA_BRASIL/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=PIRF_ZEIS_MOURA_BRASIL:vw_urbanizacao_praca_mourabrasil&outputFormat=SHAPE-ZIP

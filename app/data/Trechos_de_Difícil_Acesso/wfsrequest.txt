@@ -1,1 +1,0 @@
-https://geoserver.iplanfor.fortaleza.ce.gov.br/LIMPEZA_PUBLICA/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=LIMPEZA_PUBLICA:vw_ColetaDomiciliarDificilAcesso&outputFormat=SHAPE-ZIP

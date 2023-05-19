@@ -1,1 +1,0 @@
-https://geoserver.iplanfor.fortaleza.ce.gov.br/CULTURA_ESPORTE_LAZER/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=CULTURA_ESPORTE_LAZER:vw_Areninhas&outputFormat=SHAPE-ZIP
