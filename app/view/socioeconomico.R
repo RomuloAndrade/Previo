@@ -132,7 +132,7 @@ server <- function(id) {
     ##  aglom box
     output$aglomBox <- renderInfoBox({
       infoBox(
-        "Área (km2) de aglomerados subnormais em Fortaleza",round(sum(colSums(Filter(is.numeric,desc_aglomerado[,'area_aglom']),na.rm = T))/1000000),
+        HTML("Área (km<sup>2</sup>) de aglomerados subnormais em Fortaleza"),round(sum(colSums(Filter(is.numeric,desc_aglomerado[,'area_aglom']),na.rm = T))/1000000),
         icon = icon("object-align-bottom", lib = "glyphicon"),
         color = 'olive', fill = TRUE
       )

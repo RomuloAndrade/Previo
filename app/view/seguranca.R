@@ -210,7 +210,7 @@ server <- function(id) {
     ## pmpu box
     output$pmpuBox <- renderInfoBox({
       infoBox(
-        "Área (km2) de atuação das céluas de proteção em Fortaleza",round(sum(colSums(Filter(is.numeric,desc_pmpu[,'areaPol']),na.rm = T))/1000000),
+        HTML("Área (km<sup>2</sup>) de atuação das céluas de proteção em Fortaleza"),round(sum(colSums(Filter(is.numeric,desc_pmpu[,'areaPol']),na.rm = T))/1000000),
         icon = icon("object-align-bottom", lib = "glyphicon"),
         color = 'indigo', fill = TRUE
       )

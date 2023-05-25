@@ -15,6 +15,10 @@ box::use(
   naniar[replace_with_na_all],
   stringr[str_to_title],
   leaflet[leafletProxy,
+          labelFormat,
+          colorBin,
+          colorNumeric,
+          colorQuantile,
           addMapPane,
           setView,
           pathOptions,
@@ -41,7 +45,9 @@ box::use(
           addProviderTiles],
   leaflet.extras[addFullscreenControl,
                  setMapWidgetStyle],
-  leaflegend[addSymbols],
+  leaflegend[addSymbols,
+             addLegendNumeric,
+             addLegendQuantile],
   leafpop[popupTable],
   readr[read_csv],
   sf[st_read,
@@ -52,22 +58,30 @@ box::use(
   shinyWidgets[
     multiInput,
     pickerInput
-  ]
+  ],
+  mapmisc[colourScale]
 )
 
-filterPanel <- function (..., width = 3)
-{
-  div(class = paste0("filtro mx-2 p-3 col-sm-", width),
-      tags$form(class = "well", 
-                role = "complementary", ...))
+# filterPanel <- function (..., width = 3)
+# {
+#   div(class = paste0("filtro mx-2 p-3 col-sm-", width),
+#       tags$form(class = "well", 
+#                 role = "complementary", ...))
+# }
+# 
+# plotPanel <- function (..., width = 8)
+# {
+#   div(class = paste0("grafico col-sm-", width), role = "main", ...)
+# }
+
+my_labelFormat <- function(...) {
+  fun <- labelFormat(...)
+  evalq(formatNum <- function(x) {
+    format(round(transform(x), digits), trim = TRUE, scientific = FALSE, 
+           big.mark = big.mark, decimal.mark = ',')
+  }, environment(fun))
+  return(fun)
 }
-
-plotPanel <- function (..., width = 8)
-{
-  div(class = paste0("grafico col-sm-", width), role = "main", ...)
-}
-
-
 
 #Leitura dados
 {
@@ -99,6 +113,7 @@ plotPanel <- function (..., width = 8)
   desc_areninha <- read_csv('app/data/Areninhas/desc_areninha.csv',show_col_types = FALSE)[,-2]
   colAreninhas<- colorFactor("viridis", Areninhas$tipo)
   
+  # Ecopontos
   eco <-  read_sf('app/data/vw_Ecopontos/vw_Ecopontos.shp',
     options = "ENCODING=WINDOWS-1252" ,quiet =T)
   
@@ -193,8 +208,8 @@ plotPanel <- function (..., width = 8)
   Territorios_GEMP <- read_sf('app/data/Sesec/202304MicroterritoriosGEMPGMFNOVO/Microterritorios_GEMP_GMF.shp')  
   
   #Escolas
-  Escolas <- readRDS('app/data/Escolas/Pontos_escolas.rds')
-  colEscolas <- colorFactor("Set1", Escolas$government_level)
+  # Escolas <- readRDS('app/data/Escolas/Pontos_escolas.rds')
+  # colEscolas <- colorFactor("Set1", Escolas$government_level)
   
   Escolas_munic <-  read_sf('app/data/Escolas/escolas.shp') 
   colEscolas_munic <- colorFactor("Dark2", Escolas_munic$tipo) 
@@ -235,9 +250,31 @@ plotPanel <- function (..., width = 8)
   
   colEquip_Assist_Social <- colorFactor("Greens", Equip_Assist_Social$tipo)
   
-  Descritiva <- read_csv('app/data/Descritiva/Descritiva.csv',show_col_types = FALSE) |>
-    filter(Polig_atuac!="Não")
+  # Iluminação
   
+  Iluminacao <- st_read('app/data/Iluminacao/iluminacao.shp',quiet =T)
+   sca_ilum <- colourScale(Iluminacao$P_quart, breaks=6,
+                               style="quantile",dec=1,revCol=F)
+
+  desc_iluminacao <- read_csv('app/data/Iluminacao/desc_iluminacao.csv',show_col_types = FALSE)[,-2] 
+  
+  # Gravidez
+  adolescencia_shp<- read_sf('app/data/Maes_adolescentes/adolescencia.shp')
+  
+
+  descrit_grav <- read_csv('app/data/Maes_adolescentes/desc_adolescencia.csv',show_col_types = FALSE) [,-2] 
+  
+  # Distorçao
+  Distorcao_shp <-  read_sf('app/data/Distorcao/Distorcao.shp')
+  
+  desc_distorcao <- read_csv('app/data/Distorcao/desc_distorcao.csv',show_col_types = FALSE)[,-2]
+  
+  rend_formal <-  read_sf('app/data/Renda/vinculos_rend_formal_21.shp') 
+  sca_qtd <- colourScale(rend_formal$Qtd_Vnc, breaks=6,
+                                  style="quantile",dec=1,revCol=F)
+  sca_renda <- colourScale(rend_formal$Remn_md, breaks=6,
+                          style="quantile",dec=1,revCol=F)
+  desc_renda <- read_csv('app/data/Renda/desc_renda.csv',show_col_types = FALSE)[,-2]
   
 }
 
@@ -257,11 +294,11 @@ ui <- function(id) {
                         
                         div(
           
-                        h5('Suporte a segurança pública'),
+                        h5('Segurança pública'),
                         checkboxGroupInput(ns("segurança"), "",
                                              choices =c('Mediação de conflitos'= 'Mediacao',
                                                         'Videomonitoramento'='cameras' ,
-                                                        'Iluminação pública*'='Iluminação',
+                                                        'Iluminação pública'='Iluminação',
                                                         'Territorios GEMP'='Territorios_GEMP',
                                                         'Territorios PMPU'='Territorios_PMPU',
                                                         'Células de proteção'='Torre'),
@@ -269,13 +306,15 @@ ui <- function(id) {
                           
                         h5('Socioeconômicos'),
                         checkboxGroupInput(ns("socioeconomica"), "",
-                                           choices =c('Aglomerados Subnormais'='Aglomerado', 
-                                                      'Assentamento Precário'='Assentamento',
+                                           choices =c('Aglomerados Subnormais - Ibge'='Aglomerado', 
+                                                      'Assentamento Precário - F2040'='Assentamento',
                                                       'Pontos de lixo*'='lixo',
                                                       'Ecopontos'='eco',
-                                                      'Vínculos formais renda*'='rais',
+                                                      'Vínculos formais - renda'='rais_renda',
+                                                      'Vínculos formais - qtd.'='rais_qtd',
                                                       'Vazios urbanos*'='Vazios',
-                                                      'Gravidez na adolescência*'='gravidez'
+                                                      'Gravidez na adolescência'='gravidez',
+                                                      'Distorção escolar'='Distorcao'
                                                       ),
                                            selected = c('')),
                   
@@ -288,7 +327,6 @@ ui <- function(id) {
                                                       'Conselhos Tutelares'='Conselhos_Tutelares',
                                                       'Equipamentos de cultura' = 'cultura',
                                                       'Equipamentos de Saúde' = 'EquipamentosSaude_cnes', 
-                                                      #'Escolas educação básica'='Escolas',
                                                       'Escolas municipais'='Escolas_munic',
                                                       'Praças' = 'Pracas',
                                                       'Praças Vivas' = 'Pracas_Vivas',
@@ -318,7 +356,6 @@ ui <- function(id) {
                           uiOutput(ns("Equip_Assist_SocialControls")),
                           uiOutput(ns("CulturaControls")),
                           uiOutput(ns("EquipamentosSaudeControls")),
-                          #uiOutput(ns("EscolasControls")),
                           uiOutput(ns("Escolas_municControls"))
                     ,style="font-size:80%; line-height: .8"))
                  )
@@ -328,6 +365,7 @@ ui <- function(id) {
         ), #Fim coluna
         column(width =8,
                leafletOutput(ns("mapa_base"), height = '85vh'),
+               textOutput(ns("text_nota")),
                p('* Em construção.',align = 'right')
         )
       )
@@ -343,6 +381,8 @@ server <- function(id) {
   moduleServer(id, function(input, output, session) {
    ns <- NS(id)
    
+   # Controles de filtros
+   {   
    output$AssentamentoControls <- renderUI({
      conditionalPanel(
       ns = ns,
@@ -500,7 +540,7 @@ server <- function(id) {
        ),
      )
    })  
-  
+  }  
 
    #callModule    
    {
@@ -603,14 +643,22 @@ server <- function(id) {
       inline = F
     )
    }
-    
-   
-   descrit <-   shp_Bairros |>
+   #Notas 
+   {
+   rais <- 'Nota: Infomações dos vínculos em relação a origem do domicílio fiscal.'
+   }
+     descrit <-   shp_Bairros |>
      st_drop_geometry() |>
      select(bairro)
    
- 
-   
+    # Paletas coropletico
+   {
+   colorpal_ilum <- reactive ({colorBin("YlOrBr", Iluminacao$P_quart,reverse =T, bins = sca_ilum$breaks)   })
+   colorpal_qtd <- reactive ({colorBin("Greens", rend_formal$Qtd_Vnc, bins = sca_qtd$breaks)   })
+   colorpal_renda <- reactive ({colorBin("Blues", rend_formal$Remn_md, bins = sca_renda$breaks)   })
+   colorpal_grav <-  reactive ({colorNumeric("RdPu", adolescencia_shp$`P-NV-MA`)  })
+   colorpal_dist <-  reactive ({ colorNumeric("GnBu", Distorcao_shp$distorc ) })
+     }
     # BASE MAPA
     output$mapa_base <- renderLeaflet({
       
@@ -618,14 +666,13 @@ server <- function(id) {
       
       leaflet() |>
         setMapWidgetStyle(list(background = "white"))  |> 
-        addProviderTiles(providers$CartoDB.Positron, group = "CartoDB.Positron")  |>
+        addProviderTiles(providers$CartoDB.PositronNoLabels, group = "CartoDB.PositronNoLabels")  |> #CartoDB.Positron
         addProviderTiles(providers$OpenStreetMap, group = "OpenStreetMap")  |> 
         addProviderTiles(providers$CartoDB.DarkMatter, group = "CartoDB.DarkMatter")  |>
         addProviderTiles(providers$Esri.WorldImagery, group = "WorldImagery")  |>
         addLayersControl(
           baseGroups = c("CartoDB.Positron","OpenStreetMap",'CartoDB.DarkMatter','WorldImagery'),
           overlayGroups = c(
-            "Elementos do mapa",
             "Bairros",
             "Área de Atuação",
             'Nomes dos bairros')
@@ -667,19 +714,21 @@ server <- function(id) {
                                                           "color" = "black",
                                                           'background-color'= 'rgba(255,255,255, 0)',
                                                           'padding'= '0px 0px 0px 0px'      ))) |> 
-        addMeasure(
-          position = "topright",
-          primaryLengthUnit = "meters",
-          primaryAreaUnit = "sqmeters",
-          secondaryLengthUnit = "kilometers",
-          activeColor = "#3D535D",
-          completedColor = "#7D4479",
-          localization = "pt_BR",
-          captureZIndex = 10000
-        )|> 
+        # addMeasure(
+        #   position = "topright",
+        #   primaryLengthUnit = "meters",
+        #   primaryAreaUnit = "sqmeters",
+        #   secondaryLengthUnit = "kilometers",
+        #   activeColor = "#3D535D",
+        #   completedColor = "#7D4479",
+        #   localization = "pt_BR",
+        #   captureZIndex = 10000
+        # )|> 
        addMapPane("pontos", zIndex = 420) |>
        addMapPane("poligono", zIndex = 415) |>
-       addMapPane("bairros",zIndex = 410)
+       addMapPane("bairros",zIndex = 410) |> 
+       addMapPane("coropletico",zIndex = 405) 
+       
       
       
     })
@@ -694,9 +743,12 @@ server <- function(id) {
                      'id_samu','id_cameras',"id_Areninhas","id_AdocaoPracasEAreasVerdes",
                      'id_mediacao','id_Zeis','id_Pracas','id_Pracas_Vivas','id_cultural',
                      'id_eco','id_Territorios_PMPU','id_Territorios_GEMP','id_torre',
-                     'id_Escolas_munic')) |> 
+                     'id_Escolas_munic','id_iluminacao','id_gravidez','id_distorcao',
+                     'id_qtd','id_renda')) |> 
         clearControls() |> 
         removeMeasure()
+      
+      nota <- NULL
       
       #if("Escolas" %in% input$infraestrutura  )
       {
@@ -721,13 +773,13 @@ server <- function(id) {
 
         
         leafletProxy("mapa_base")  |>
-          addSymbols(data=Escolas_municR(),lng=~lon,lat=~lat,
+          addSymbols(data=Escolas_municR(),lng=~long,lat=~latt,
                      #clusterOptions = markerClusterOptions(maxClusterRadius = 10),
                      group = "id_Escolas_munic" ,
                      width = 5,
                      color = colEscolas_munic(Escolas_municR()$tipo),
                      popup = popupTable(Escolas_municR() ,
-                                        zcol = c("nome","tipo"),
+                                        zcol = c("nome","tipo",'distorcao'),
                                         feature.id = FALSE,
                                         row.numbers = FALSE) ,
                      fillOpacity = 1,
@@ -745,6 +797,93 @@ server <- function(id) {
                                  by=c('bairro'='bairro') )
       }
       
+      if("rais_qtd" %in% input$socioeconomica  )
+      {
+        
+        pal_qtd <- colorpal_qtd() 
+        
+        leafletProxy(mapId="mapa_base")  |>
+          addPolygons(data=rend_formal,
+                      opacity = 0.5,
+                      weight=1.5,
+                      fillColor =   ~pal_qtd(Qtd_Vnc ),
+                      dashArray = "1",
+                      group = 'id_qtd',
+                      options = pathOptions(pane = "coropletico"),
+                      fillOpacity = .8)  |> 
+          addLegend(data=rend_formal,
+                           pal = pal_qtd,
+                           values =  ~Qtd_Vnc ,
+                           position = 'bottomleft',
+                    labFormat = my_labelFormat(
+                      big.mark='.',
+                      digits=0),
+                           title = 'Qtd. vínculos formais',
+                           opacity = 1) 
+        
+        descrit_pop <- left_join(descrit_pop,desc_renda ,by=c('bairro'='bairro'))
+        nota <-  rais
+        }
+      
+      if("rais_renda" %in% input$socioeconomica  )
+      {
+        
+        pal_renda <- colorpal_renda() 
+        
+        leafletProxy(mapId="mapa_base")  |>
+          addPolygons(data=rend_formal,
+                      opacity = 0.5,
+                      weight=1.5,
+                      fillColor =   ~pal_renda(Remn_md ),
+                      dashArray = "1",
+                      group = 'id_renda',
+                      options = pathOptions(pane = "coropletico"),
+                      fillOpacity = .8)  |> 
+          addLegend(data=rend_formal,
+                    pal = pal_renda,
+                    labFormat = my_labelFormat(
+                      suffix =" R$",
+                      big.mark='.',
+                      digits=0),
+                    values =  ~Remn_md ,
+                    position = 'bottomleft',
+                    title = 'Renda vínculos formais',
+                    opacity = 1) 
+        
+        descrit_pop <- left_join(descrit_pop,desc_renda ,by=c('bairro'='bairro'))
+        nota <-  rais
+      }
+      
+      
+      if("Distorcao" %in% input$socioeconomica  )
+      {
+      
+      pal_dist <- colorpal_dist() 
+      
+      leafletProxy(mapId="mapa_base")  |>
+        addPolygons(data=Distorcao_shp,
+                    opacity = 0.5,
+                    weight=1.5,
+                    fillColor =   ~pal_dist(distorc ),
+                    dashArray = "1",
+                    group = 'id_distorcao',
+                    options = pathOptions(pane = "coropletico"),
+                    fillOpacity = .8)  |> 
+        addLegendNumeric(data=Distorcao_shp,
+          pal = pal_dist,
+          values =  ~distorc ,
+          position = 'bottomleft',
+          title = 'Distorção Idade-Série',
+          orientation = 'horizontal',
+          shape = 'stadium',
+          decreasing = FALSE,
+          height = 20,
+          width = 190
+        ) 
+      
+      descrit_pop <- left_join(descrit_pop,desc_distorcao ,by=c('bairro'='bairro'))
+      
+      }
       if("Assentamento" %in% input$socioeconomica  )
       {
         leafletProxy(mapId="mapa_base")  |>
@@ -756,6 +895,7 @@ server <- function(id) {
                       dashArray = "1",
                       fillOpacity = 0.5,
                       group = 'id_Assentamento',
+                      options = pathOptions(pane = "poligono"),
                       highlight=highlightOptions(
                         weight = 5,
                         color = "#865",
@@ -765,6 +905,65 @@ server <- function(id) {
           addLegend("bottomright",colors =  "#03F",
                     labels =c('Assentamento precário - F2040'),
                     opacity = 1)
+      }
+      
+      if("gravidez" %in% input$socioeconomica  )
+      {
+        pal_grav <- colorpal_grav()
+        
+        leafletProxy(mapId="mapa_base")  |>
+          addPolygons(data=adolescencia_shp,
+                      opacity = 0.5,
+                      weight=1.5,
+                      fillColor =   ~pal_grav(`P-NV-MA`),
+                      dashArray = "1",
+                      fillOpacity = .8,
+                      group = 'id_gravidez',
+                      options = pathOptions(pane = "coropletico"))  |> 
+          addLegendNumeric(data=adolescencia_shp,
+            pal = pal_grav,
+            values =  ~`P-NV-MA`,
+            position = 'bottomleft',
+            title = '% Nascidos vivos mães adolesc.',
+            orientation = 'horizontal',
+            shape = 'stadium',
+            decreasing = FALSE,
+            height = 20,
+            width = 190)
+        
+        descrit_pop <- left_join(descrit_pop,descrit_grav ,by=c('bairro'='bairro'))
+        
+      }
+      
+      
+      if("Iluminação" %in% input$segurança  )
+      {
+        
+        pal_ilum <- colorpal_ilum()
+        leafletProxy(mapId="mapa_base")  |>
+          addPolygons(data= Iluminacao,
+                      opacity = 0.5,
+                      weight=1.5,
+                      fillColor =   ~pal_ilum(P_quart),
+                      dashArray = "1",
+                      fillOpacity = .8,
+                      group = 'id_iluminacao',
+                      options = pathOptions(pane = "coropletico"))|> 
+          addLegend(data= Iluminacao,
+                           pal = pal_ilum,
+                           values =  ~P_quart,
+                           position = 'bottomleft',
+                           title = "Pontos de iluminação por quarteirão",
+                           opacity = 1
+                          # orientation = 'horizontal',
+                          # shape = 'stadium',
+                           #decreasing = FALSE,
+                           #height = 20,
+                           #width = 190 
+                    )
+        
+        descrit_pop <- left_join(descrit_pop,desc_iluminacao ,by=c('bairro'='bairro'))
+        
       }
       
       if("Aglomerado" %in% input$socioeconomica  )
@@ -942,7 +1141,8 @@ server <- function(id) {
                            options = pathOptions(pane = "pontos")
           ) |>
           addLegend("bottomright",colors =  '#870BDE',
-                    labels =c('Célula de proteção'),
+                    title='Torre',
+                    labels =c('Célula de proteção comunitária'),
                     opacity = 1)
         
         descrit_pop <- left_join(descrit_pop,desc_torre ,by=c('bairro'='bairro'))
@@ -989,7 +1189,6 @@ server <- function(id) {
         
         
       }
-      
       
       if('Areninhas' %in% input$infraestrutura )
       {
@@ -1151,6 +1350,8 @@ server <- function(id) {
         
       }
       
+      output$text_nota <- renderText({nota})
+      
       leafletProxy("mapa_base")  |>
         addPolygons(data=shp_Bairros,
                     weight=1,
@@ -1163,8 +1364,7 @@ server <- function(id) {
                     fillOpacity = 0,
                     group = "Bairros",
                    options = pathOptions(pane = "bairros")
-                    )
-      
+                    ) 
       
     })
     

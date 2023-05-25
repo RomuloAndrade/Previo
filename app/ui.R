@@ -20,6 +20,7 @@ box::use(
   ./view/inicio,
   ## ./view/metodologia,
   ./view/socioeconomico,
+  #./view/socioeconomico2,
   ./view/seguranca,
   ./view/infraestrutura,
   ./view/glossario,
@@ -73,7 +74,7 @@ ui <- dashboardPage(
         #tabName = "metodologia",
         icon = icon("book"),
         
-        menuSubItem("Suporte a segurança pública",
+        menuSubItem("Segurança pública",
                     tabName = "seguranca",
                     icon = icon("circle")
         ),
@@ -81,6 +82,10 @@ ui <- dashboardPage(
           tabName = "socioeconomico",
           icon = icon("circle")
               ),
+        # menuSubItem("teste",
+        #             tabName = "socioeconomico2",
+        #             icon = icon("circle")
+        # ),
         menuSubItem("Infraestrutura",
                     tabName = "infraestrutura",
                     icon = icon("circle")
@@ -149,6 +154,10 @@ ui <- dashboardPage(
         tabName = "socioeconomico",
         socioeconomico$ui("socioeconomico")
       ),
+      # tabItem(
+      #   tabName = "socioeconomico2",
+      #   socioeconomico2$ui("socioeconomico2")
+      # ),
       tabItem(
         tabName = "infraestrutura",
         infraestrutura$ui("infraestrutura")

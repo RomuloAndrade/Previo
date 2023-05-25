@@ -6,13 +6,14 @@ box::use(
 box::use(
   ./mod/notification[notify],
   ./view/inicio,
-  #./view/metodologia,
+  # ./view/metodologia,
   ./view/socioeconomico,
   ./view/seguranca,
   ./view/infraestrutura,
   ./view/glossario,
   ./view/fonte,
-  ./view/sobre
+  ./view/sobre,
+  #./view/socioeconomico2
   ## ./view/cartoes_basicos,
   ## ./view/cartoes_api,
   ## ./view/cartoes_abas,
@@ -67,6 +68,7 @@ server <- function(input, output, session) {
   inicio$server("inicio")
   #metodologia$server("metodologia")
   socioeconomico$server("socioeconomico")
+ # socioeconomico2$server("socioeconomico2")
   seguranca$server("seguranca")
   infraestrutura$server("infraestrutura")
   glossario$server("glossario")

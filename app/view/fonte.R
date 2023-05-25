@@ -162,12 +162,12 @@ ui <- function(id) {
              tags$i("MPCE, 2020.") ),
            ## 
            p(strong("Equipamentos de cultura"),
-             a(target="_blank",
-               href = "https://www.ibge.gov.br/geociencias/organizacao-do-territorio/tipologias-do-territorio/15788-aglomerados-subnormais.html",
-               "<link>"
-             ),
+             # a(target="_blank",
+             #   href = "https://www.ibge.gov.br/geociencias/organizacao-do-territorio/tipologias-do-territorio/15788-aglomerados-subnormais.html",
+             #   "<link>"
+             # ),
              br(),
-             tags$i("IBGE, 2019.") ),
+             tags$i("F2040, 2019.") ),
            ## 
            p(strong("Equipamentos de Saúde"),
              a(target="_blank",
